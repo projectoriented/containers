@@ -1,0 +1,80 @@
+# Author: Mei Wu, https://github.com/projectoriented
+Bootstrap: docker
+From: ubuntu:20.04
+
+%environment
+    DEBIAN_FRONTEND=noninteractive
+    HTSLIB_VERSION=1.18
+    SAMTOOLS_VERSION=1.18
+    MINIMAP2_VERSION=2.26
+    STROBEALIGN_VERSION=0.11.0
+    LOCITYPER_COMMIT_HASH=e0dd049
+    PATH=/opt/samtools/samtools-${SAMTOOLS_VERSION}/bin:/opt/minimap2/minimap2-${MINIMAP2_VERSION}_x64-linux:/opt/strobealign/strobealign-${STROBEALIGN_VERSION}/build:/work:$PATH
+    CC=/usr/bin/gcc-9
+    CXX=/usr/bin/g++-9
+
+%setup
+    mkdir -p /opt/htslib
+    mkdir -p /opt/samtools
+    mkdir -p /opt/minimap2
+    mkdir -p /opt/strobealign
+    mkdir -p /opt/locityper
+    mkdir -p /opt/locityper/WFA2
+
+%post
+    apt-get update
+    apt-get install -y \
+        gcc-9 g++-9 \
+        cmake \
+        build-essential \
+        clang \
+        wget curl \
+        zlib1g-dev libcurl4-gnutls-dev liblzma-dev libncurses5-dev libncursesw5-dev libssl-dev libbz2-dev \
+        autoconf \
+        git \
+        jellyfish
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
+
+    cd /opt/htslib
+    wget https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/htslib-${HTSLIB_VERSION}.tar.bz2
+    tar -xvf htslib-${HTSLIB_VERSION}.tar.bz2
+    rm -r htslib-${HTSLIB_VERSION}.tar.bz2
+    cd htslib-${HTSLIB_VERSION}
+    ./configure
+    make
+
+    cd /opt/samtools
+    wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2
+    tar -xvf samtools-${SAMTOOLS_VERSION}.tar.bz2
+    rm -r samtools-${SAMTOOLS_VERSION}.tar.bz2
+    cd samtools-${SAMTOOLS_VERSION}
+    autoheader
+    autoconf -Wno-header
+    ./configure --with-htslib=/opt/htslib/htslib-${HTSLIB_VERSION}
+    make
+
+    cd /opt/minimap2
+    wget https://github.com/lh3/minimap2/releases/download/v${MINIMAP2_VERSION}/minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
+    tar -xvf minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
+    rm minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
+
+    cd /opt/strobealign
+    wget https://github.com/ksahlin/strobealign/archive/refs/tags/v${STROBEALIGN_VERSION}.tar.gz
+    tar -xvf v${STROBEALIGN_VERSION}.tar.gz
+    rm v${STROBEALIGN_VERSION}.tar.gz
+    cd strobealign-${STROBEALIGN_VERSION}
+    cmake -B "build" -DCMAKE_C_FLAGS="-march=native" -DCMAKE_CXX_FLAGS="-march=native"
+    make -j -C build
+
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+    cd /opt/locityper
+    git clone https://github.com/tprodanov/locityper.git .
+    git clone https://github.com/smarco/WFA2-lib.git WFA2
+    git checkout ${LOCITYPER_COMMIT_HASH}
+    /root/.cargo/bin/cargo build --release
+    /root/.cargo/bin/cargo install --path .
+
+%runscript
+    /bin/bash

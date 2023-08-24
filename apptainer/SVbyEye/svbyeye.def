@@ -1,0 +1,23 @@
+# Author: Mei Wu, https://github.com/projectoriented
+BootStrap: docker
+From: rocker/r-base:4.2.3
+
+%post
+    apt-get update && apt-get install -y \
+        build-essential \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        libopenmpi-dev \
+        libtool libtool-bin \
+        autoconf g++ gfortran cmake \
+        libopenblas-dev openmpi-bin openmpi-common openssh-client openssh-server \
+        libfreetype6-dev libfontconfig1-dev xclip \
+        libxml2-dev libv8-dev \
+        automake
+
+    R --slave -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/",
+    R --slave -e 'pak::pkg_install("daewoooo/SVbyEye")'
+
+%test
+    #!/bin/bash
+    exec R --slave -e "paste('SVbyEye version:', packageVersion('SVbyEye'))"

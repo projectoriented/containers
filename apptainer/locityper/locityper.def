@@ -2,6 +2,11 @@
 Bootstrap: docker
 From: ubuntu:20.04
 
+%environment
+    export PATH=/opt/samtools/samtools-${SAMTOOLS_VERSION}/bin:/opt/minimap2/minimap2-${MINIMAP2_VERSION}_x64-linux:/opt/strobealign/build:/root/.cargo/bin/:$PATH
+    export CC=/usr/bin/gcc-9
+    export CXX=/usr/bin/g++-9
+
 %post
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
@@ -23,13 +28,8 @@ From: ubuntu:20.04
     HTSLIB_VERSION=1.18
     SAMTOOLS_VERSION=1.18
     MINIMAP2_VERSION=2.26
-    STROBEALIGN_VERSION=0.11.0
-    LOCITYPER_COMMIT_HASH=d31b78c
-
-    # Define the paths
-    export CC=/usr/bin/gcc-9
-    export CXX=/usr/bin/g++-9
-    PATH=/opt/samtools/samtools-${SAMTOOLS_VERSION}/bin:/opt/minimap2/minimap2-${MINIMAP2_VERSION}_x64-linux:/opt/strobealign/strobealign-${STROBEALIGN_VERSION}/build:/work:$PATH
+    STROBEALIGN_COMMIT_HASH=f6b6208
+    LOCITYPER_COMMIT_HASH=ad223eb
 
     # Setup all the required directories.
     mkdir -p /opt/htslib
@@ -66,10 +66,8 @@ From: ubuntu:20.04
 
     # Install strobealign
     cd /opt/strobealign
-    wget https://github.com/ksahlin/strobealign/archive/refs/tags/v${STROBEALIGN_VERSION}.tar.gz
-    tar -xvf v${STROBEALIGN_VERSION}.tar.gz
-    rm v${STROBEALIGN_VERSION}.tar.gz
-    cd strobealign-${STROBEALIGN_VERSION}
+    git clone https://github.com/ksahlin/strobealign.git .
+    git checkout ${STROBEALIGN_COMMIT_HASH}
     cmake -B "build" -DCMAKE_C_FLAGS="-march=native" -DCMAKE_CXX_FLAGS="-march=native"
     make -j -C build
 

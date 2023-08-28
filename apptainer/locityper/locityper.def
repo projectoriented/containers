@@ -2,28 +2,10 @@
 Bootstrap: docker
 From: ubuntu:20.04
 
-%environment
-    DEBIAN_FRONTEND=noninteractive
-    HTSLIB_VERSION=1.18
-    SAMTOOLS_VERSION=1.18
-    MINIMAP2_VERSION=2.26
-    STROBEALIGN_VERSION=0.11.0
-    LOCITYPER_COMMIT_HASH=e0dd049
-    PATH=/opt/samtools/samtools-${SAMTOOLS_VERSION}/bin:/opt/minimap2/minimap2-${MINIMAP2_VERSION}_x64-linux:/opt/strobealign/strobealign-${STROBEALIGN_VERSION}/build:/work:$PATH
-    CC=/usr/bin/gcc-9
-    CXX=/usr/bin/g++-9
-
-%setup
-    mkdir -p /opt/htslib
-    mkdir -p /opt/samtools
-    mkdir -p /opt/minimap2
-    mkdir -p /opt/strobealign
-    mkdir -p /opt/locityper
-    mkdir -p /opt/locityper/WFA2
-
 %post
+    export DEBIAN_FRONTEND=noninteractive
     apt-get update
-    apt-get install -y \
+    apt-get install -y -q \
         gcc-9 g++-9 \
         cmake \
         build-essential \
@@ -33,9 +15,30 @@ From: ubuntu:20.04
         autoconf \
         git \
         jellyfish
+    # Switch default to gcc-9
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 
+    # Establish versions
+    HTSLIB_VERSION=1.18
+    SAMTOOLS_VERSION=1.18
+    MINIMAP2_VERSION=2.26
+    STROBEALIGN_VERSION=0.11.0
+    LOCITYPER_COMMIT_HASH=d31b78c
+
+    # Define the paths
+    export CC=/usr/bin/gcc-9
+    export CXX=/usr/bin/g++-9
+    PATH=/opt/samtools/samtools-${SAMTOOLS_VERSION}/bin:/opt/minimap2/minimap2-${MINIMAP2_VERSION}_x64-linux:/opt/strobealign/strobealign-${STROBEALIGN_VERSION}/build:/work:$PATH
+
+    # Setup all the required directories.
+    mkdir -p /opt/htslib
+    mkdir -p /opt/samtools
+    mkdir -p /opt/minimap2
+    mkdir -p /opt/strobealign
+    mkdir -p /opt/locityper
+
+    # Install htslib
     cd /opt/htslib
     wget https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/htslib-${HTSLIB_VERSION}.tar.bz2
     tar -xvf htslib-${HTSLIB_VERSION}.tar.bz2
@@ -44,6 +47,7 @@ From: ubuntu:20.04
     ./configure
     make
 
+    # Install samtools
     cd /opt/samtools
     wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2
     tar -xvf samtools-${SAMTOOLS_VERSION}.tar.bz2
@@ -54,11 +58,13 @@ From: ubuntu:20.04
     ./configure --with-htslib=/opt/htslib/htslib-${HTSLIB_VERSION}
     make
 
+    # Install minimap2
     cd /opt/minimap2
     wget https://github.com/lh3/minimap2/releases/download/v${MINIMAP2_VERSION}/minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
     tar -xvf minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
     rm minimap2-${MINIMAP2_VERSION}_x64-linux.tar.bz2
 
+    # Install strobealign
     cd /opt/strobealign
     wget https://github.com/ksahlin/strobealign/archive/refs/tags/v${STROBEALIGN_VERSION}.tar.gz
     tar -xvf v${STROBEALIGN_VERSION}.tar.gz
@@ -67,6 +73,7 @@ From: ubuntu:20.04
     cmake -B "build" -DCMAKE_C_FLAGS="-march=native" -DCMAKE_CXX_FLAGS="-march=native"
     make -j -C build
 
+    # Install locityper
     curl https://sh.rustup.rs -sSf | sh -s -- -y
 
     cd /opt/locityper

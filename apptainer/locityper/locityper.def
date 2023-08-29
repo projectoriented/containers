@@ -10,7 +10,7 @@ From: ubuntu:20.04
 %environment
     export CC=/usr/bin/gcc-9
     export CXX=/usr/bin/g++-9
-    export PATH=/opt/samtools/samtools-{{ SAMTOOLS_VERSION }}/bin:/opt/minimap2/minimap2-{{ MINIMAP2_VERSION }}_x64-linux:/opt/strobealign/build:/root/.cargo/bin/:$PATH
+    export PATH=/opt/samtools/samtools-{{ SAMTOOLS_VERSION }}:/opt/minimap2/minimap2-{{ MINIMAP2_VERSION }}_x64-linux:/opt/strobealign/build:/root/.cargo/bin/:$PATH
 
 %post
     export DEBIAN_FRONTEND=noninteractive

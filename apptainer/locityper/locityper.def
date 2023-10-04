@@ -31,7 +31,7 @@ From: ubuntu:20.04
 
     # Establish versions
     STROBEALIGN_COMMIT_HASH=f6b6208
-    LOCITYPER_COMMIT_HASH=dd67897
+    LOCITYPER_COMMIT_HASH=cc13452
 
     # Setup all the required directories.
     mkdir -p /opt/htslib

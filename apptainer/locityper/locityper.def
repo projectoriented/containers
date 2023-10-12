@@ -30,8 +30,8 @@ From: ubuntu:20.04
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 
     # Establish versions
-    STROBEALIGN_COMMIT_HASH=f6b6208
-    LOCITYPER_COMMIT_HASH=cc13452
+    STROBEALIGN_COMMIT_HASH=93be0c2
+    LOCITYPER_COMMIT_HASH=340bfd5
 
     # Setup all the required directories.
     mkdir -p /opt/htslib

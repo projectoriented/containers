@@ -1,22 +1,16 @@
 # Author: Mei Wu, https://github.com/projectoriented
 BootStrap: docker
-From: rocker/r-base:4.2.3
+From: rocker/r-base:4.3.1
 
 %post
     apt-get update && apt-get install -y \
+        curl \
         build-essential \
-        libssl-dev \
-        libcurl4-openssl-dev \
-        libopenmpi-dev \
-        libtool libtool-bin \
-        autoconf g++ gfortran cmake \
-        libopenblas-dev openmpi-bin openmpi-common openssh-client openssh-server \
-        libfreetype6-dev libfontconfig1-dev xclip \
-        libxml2-dev libv8-dev \
-        automake
+        libfreetype-dev=2.13.2+dfsg-1 \
+        libgdal-dev gdal-bin libproj-dev
 
-    R --slave -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/",
-    R --slave -e 'pak::pkg_install("daewoooo/SVbyEye")'
+    R --slave -e 'install.packages(c("pak","pkgdepends"))'
+    R --slave -e 'pak::pkg_install("daewoooo/SVbyEye@6cca4fc", dependencies=TRUE)'
 
 %test
     #!/bin/bash
